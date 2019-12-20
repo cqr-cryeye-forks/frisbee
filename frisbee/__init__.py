@@ -141,25 +141,27 @@ class Frisbee:
             self._processed.append(output['domain'])
             self.results.append(output)
             self._progressive_save(output)
-
-            if output['greedy']:
-                bonus_jobs: List = list()
-                observed: List = list()
-                for item in output['results']['emails']:
-                    part_split = item.split('@')
-                    if len(part_split) == 1:
-                        continue
-                    found: str = item.split('@')[1]
-                    if found in self._processed or found in observed:
-                        continue
-                    observed.append(found)
-                    base: Dict = dict()
-                    base['limit'] = output['limit']
-                    base['modifier'] = output['modifier']
-                    base['engine'] = output['engine']
-                    base['greedy'] = False
-                    base['domain'] = found
-                    bonus_jobs.append(base)
+            
+            bonus_jobs = False
+            if 'greedy' in output:
+                if output['greedy']:
+                    bonus_jobs: List = list()
+                    observed: List = list()
+                    for item in output['results']['emails']:
+                        part_split = item.split('@')
+                        if len(part_split) == 1:
+                            continue
+                        found: str = item.split('@')[1]
+                        if found in self._processed or found in observed:
+                            continue
+                        observed.append(found)
+                        base: Dict = dict()
+                        base['limit'] = output['limit']
+                        base['modifier'] = output['modifier']
+                        base['engine'] = output['engine']
+                        base['greedy'] = False
+                        base['domain'] = found
+                        bonus_jobs.append(base)
 
                 if bonus_jobs:
                     self.search(bonus_jobs, executor=executor)
